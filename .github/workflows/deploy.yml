@@ -25,9 +25,6 @@ jobs:
       - name: Compile TypeScript to JavaScript
         run: npm run build
 
-      - name: List directory contents
-        run: ls -la
-
       - name: Bootstrap CDK
         run: npx cdk bootstrap
         env:
