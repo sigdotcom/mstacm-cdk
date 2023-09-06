@@ -1,13 +1,29 @@
-import * as cdk from "aws-cdk-lib";
+import { SecretValue, Stack, StackProps } from "aws-cdk-lib";
+import { App, GitHubSourceCodeProvider } from "@aws-cdk/aws-amplify-alpha";
 import { Construct } from "constructs";
-import { aws_s3 as s3 } from "aws-cdk-lib";
 
-export class MstacmCdkStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+export class MstacmCdkStack extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    new s3.Bucket(this, "TestBucketTwo", {
-      versioned: true,
+    const environment: string =
+      this.node.tryGetContext("environment") || "prod";
+    const oauthTokenSecretName: string = `GITHUB_TOKEN_${environment.toUpperCase()}`;
+    const oauthToken: SecretValue = SecretValue.secretsManager(
+      oauthTokenSecretName,
+      {
+        jsonField: "GITHUB_TOKEN_KEY",
+      }
+    );
+
+    const mstacmAmplifyFrontend = new App(this, "MstacmFrontend", {
+      sourceCodeProvider: new GitHubSourceCodeProvider({
+        owner: "sigdotcom",
+        repository: "mstacm-frontend",
+        oauthToken: oauthToken,
+      }),
     });
+
+    const masterBranch = mstacmAmplifyFrontend.addBranch("main");
   }
 }
