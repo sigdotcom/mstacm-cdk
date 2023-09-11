@@ -46,14 +46,6 @@ export default class AmplifyConstruct extends Construct {
           oauthToken: oauthToken,
         }),
         role: this.amplifyServiceRole,
-        customRules: [
-          {
-            source:
-              "/^[^.]+$|\\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|ttf)$)([^.]+$)/",
-            target: "/index.html",
-            status: RedirectStatus.REWRITE,
-          },
-        ],
       }
     );
 
