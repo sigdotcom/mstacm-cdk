@@ -49,7 +49,7 @@ export default class AmplifyConstruct extends Construct {
         customRules: [
           {
             source:
-              "</^[^.]+$|.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|ttf)$)([^.]+$)/>",
+              "/^[^.]+$|\\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|ttf)$)([^.]+$)/",
             target: "/index.html",
             status: RedirectStatus.REWRITE,
           },
