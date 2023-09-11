@@ -7,15 +7,16 @@ export class MstacmCdkStack extends Stack {
     super(scope, id, props);
 
     const environment: string = this.node.tryGetContext("environment") || "dev";
+    console.log(environment);
     const rootDomain = "mstacm.org";
 
-    const Auth = new CognitoConstruct(this, "MstacmAuth", {
-      environment: environment,
-    });
+    // const Auth = new CognitoConstruct(this, "MstacmAuth", {
+    //   environment: environment,
+    // });
 
-    const AmplifyFrontend = new AmplifyConstruct(this, "MstacmFrontend", {
-      environment: environment,
-      parameterArns: Auth.authParameterArns,
-    });
+    // const AmplifyFrontend = new AmplifyConstruct(this, "MstacmFrontend", {
+    //   environment: environment,
+    //   parameterArns: Auth.authParameterArns,
+    // });
   }
 }

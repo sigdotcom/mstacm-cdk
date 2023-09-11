@@ -10,7 +10,7 @@
     "test": "jest",
     "cdk": "cdk",
     "login": "aws sso login",
-    "deploy": "npm run build && cdk bootstrap --profile dev && cdk synth && cdk deploy --profile dev --context environment=dev"
+    "deploy": "npm run build && cdk bootstrap --profile dev -c environment=dev && cdk synth -c environment=dev && cdk deploy --profile dev -c environment=dev"
   },
   "devDependencies": {
     "@types/jest": "^29.5.4",
@@ -22,8 +22,8 @@
     "typescript": "~5.1.6"
   },
   "dependencies": {
-    "@aws-cdk/aws-amplify-alpha": "^2.94.0-alpha.0",
-    "aws-cdk-lib": "2.94.0",
+    "@aws-cdk/aws-amplify-alpha": "^2.95.1-alpha.0",
+    "aws-cdk-lib": "^2.95.1",
     "constructs": "^10.2.70",
     "source-map-support": "^0.5.21"
   }
