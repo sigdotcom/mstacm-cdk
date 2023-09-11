@@ -1,29 +1,26 @@
-import { SecretValue, Stack, StackProps } from "aws-cdk-lib";
-import { App, GitHubSourceCodeProvider } from "@aws-cdk/aws-amplify-alpha";
+import { Stack, StackProps } from "aws-cdk-lib";
+import {
+  AmplifyConstruct,
+  CognitoConstruct,
+  Route53Construct,
+  CertificateConstruct,
+} from "./constructs";
 import { Construct } from "constructs";
 
 export class MstacmCdkStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const environment: string =
-      this.node.tryGetContext("environment") || "prod";
-    const oauthTokenSecretName: string = `GITHUB_TOKEN_${environment.toUpperCase()}`;
-    const oauthToken: SecretValue = SecretValue.secretsManager(
-      oauthTokenSecretName,
-      {
-        jsonField: "GITHUB_TOKEN_KEY",
-      }
-    );
+    const environment: string = this.node.tryGetContext("environment") || "dev";
+    const rootDomain = "mstacm.org";
 
-    const mstacmAmplifyFrontend = new App(this, "MstacmFrontend", {
-      sourceCodeProvider: new GitHubSourceCodeProvider({
-        owner: "sigdotcom",
-        repository: "mstacm-frontend",
-        oauthToken: oauthToken,
-      }),
-    });
+    // const Auth = new CognitoConstruct(this, "MstacmAuth", {
+    //   environment: environment,
+    // });
 
-    const masterBranch = mstacmAmplifyFrontend.addBranch("main");
+    // const AmplifyFrontend = new AmplifyConstruct(this, "MstacmFrontend", {
+    //   environment: environment,
+    //   parameterArns: Auth.authParameterArns,
+    // });
   }
 }
