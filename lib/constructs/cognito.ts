@@ -16,21 +16,24 @@ export default class CognitoConstruct extends Construct {
   private readonly userPool: UserPool;
   private readonly userPoolClient: UserPoolClient;
   private readonly userPoolDomain: UserPoolDomain;
+  private readonly callbackUrls: string[];
+  private readonly logoutUrls: string[];
   private readonly parameterArns: string[];
   constructor(scope: Construct, id: string, props: CognitoConstructProps) {
     super(scope, id);
 
     const authParameterStore = new SsmContruct(this, "AuthParameterStore", {});
 
-    const callbackUrl: string =
-      props.environment === "prod"
-        ? "https://web.mstacm.org/auth/callback"
-        : "http://localhost:3000/auth/callback";
+    const devUrls = ["http://localhost:3000", "https://web-dev.mstacm.org"];
 
-    const logoutUrl: string =
+    const prodUrls = ["https://web.mstacm.org"];
+
+    this.callbackUrls =
       props.environment === "prod"
-        ? "https://web.mstacm.org/"
-        : "http://localhost:3000/";
+        ? this.constructCallbackUrls(prodUrls)
+        : this.constructCallbackUrls(devUrls);
+
+    this.logoutUrls = props.environment === "prod" ? prodUrls : devUrls;
 
     this.userPool = new UserPool(this, "MstacmUserPool", {
       userPoolName: `Mstacm-${props.environment}-UserPool`,
@@ -54,8 +57,8 @@ export default class CognitoConstruct extends Construct {
 
     this.userPoolClient = this.userPool.addClient("MstacmUserPoolClient", {
       oAuth: {
-        callbackUrls: [callbackUrl],
-        logoutUrls: [logoutUrl],
+        callbackUrls: this.callbackUrls,
+        logoutUrls: this.logoutUrls,
         flows: {
           authorizationCodeGrant: true,
           implicitCodeGrant: false,
@@ -71,8 +74,8 @@ export default class CognitoConstruct extends Construct {
         name: "userPoolWebClientId",
         value: this.userPoolClient.userPoolClientId,
       },
-      { name: "redirectSignIn", value: callbackUrl },
-      { name: "redirectSignOut", value: logoutUrl },
+      { name: "redirectSignIn", value: this.callbackUrls[0] },
+      { name: "redirectSignOut", value: this.logoutUrls[0] },
     ];
 
     ssmParameters.forEach((param) => {
@@ -84,5 +87,13 @@ export default class CognitoConstruct extends Construct {
 
   public get authParameterArns(): string[] {
     return this.parameterArns;
+  }
+
+  private constructCallbackUrls(urls: string[]): string[] {
+    const callbackUrls: string[] = [];
+    urls.forEach((url) => {
+      callbackUrls.push(url + "/auth/callback");
+    });
+    return callbackUrls;
   }
 }

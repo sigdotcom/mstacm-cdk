@@ -14,9 +14,12 @@ export class MstacmCdkStack extends Stack {
       environment: environment,
     });
 
-    const AmplifyFrontend = new AmplifyConstruct(this, "MstacmFrontend", {
+    const MstacmWebFrontend = new AmplifyConstruct(this, "MstacmWebFrontend", {
       environment: environment,
-      parameterArns: Auth.authParameterArns,
+      gitOwner: "sigdotcom",
+      gitRepo: "mstacm-frontend",
     });
+
+    MstacmWebFrontend.addPolicy(["ssm:GetParameter"], Auth.authParameterArns);
   }
 }

@@ -1,15 +1,21 @@
-import { App, GitHubSourceCodeProvider } from "@aws-cdk/aws-amplify-alpha";
+import {
+  App,
+  GitHubSourceCodeProvider,
+  RedirectStatus,
+} from "@aws-cdk/aws-amplify-alpha";
 import { SecretValue, StackProps } from "aws-cdk-lib";
 import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { Construct } from "constructs";
 
 export interface AmplifyConstructProps extends StackProps {
   environment: string;
-  parameterArns: string[];
+  gitOwner: string;
+  gitRepo: string;
 }
 
 export default class AmplifyConstruct extends Construct {
-  private readonly mstacmAmplifyFrontend: App;
+  private readonly amplifyApp: App;
+  private readonly amplifyServiceRole: Role;
 
   constructor(scope: Construct, id: string, props: AmplifyConstructProps) {
     super(scope, id);
@@ -22,36 +28,47 @@ export default class AmplifyConstruct extends Construct {
       }
     );
 
-    // const domainName =
-    //   props.environment === "prod" ? "web.mstacm.org" : "dev.web.mstacm.org";
-
-    const amplifyServiceRole = new Role(this, "AmplifyServiceRole", {
-      assumedBy: new ServicePrincipal("amplify.amazonaws.com"),
-    });
-
-    // Grant permissions to read from the created SSM parameters
-    amplifyServiceRole.addToPolicy(
-      new PolicyStatement({
-        actions: ["ssm:GetParameter"],
-        resources: props.parameterArns,
-      })
+    this.amplifyServiceRole = new Role(
+      this,
+      `Amplify-${props.environment}-${props.gitRepo}-ServiceRole`,
+      {
+        assumedBy: new ServicePrincipal("amplify.amazonaws.com"),
+      }
     );
 
-    this.mstacmAmplifyFrontend = new App(this, "MstacmAmplifyFrontend", {
-      sourceCodeProvider: new GitHubSourceCodeProvider({
-        owner: "sigdotcom",
-        repository: "mstacm-frontend",
-        oauthToken: oauthToken,
-      }),
-      role: amplifyServiceRole,
-    });
-
-    // this.mstacmAmplifyFrontend.addDomain(domainName);
+    this.amplifyApp = new App(
+      this,
+      `Amplify-${props.environment}-${props.gitRepo}-App`,
+      {
+        sourceCodeProvider: new GitHubSourceCodeProvider({
+          owner: props.gitOwner,
+          repository: props.gitRepo,
+          oauthToken: oauthToken,
+        }),
+        role: this.amplifyServiceRole,
+        customRules: [
+          {
+            source:
+              "/^[^.]+$|\\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|ttf)$)([^.]+$)/",
+            target: "/index.html",
+            status: RedirectStatus.REWRITE,
+          },
+        ],
+      }
+    );
 
     if (props.environment === "prod") {
-      const masterBranch = this.mstacmAmplifyFrontend.addBranch("main");
+      const masterBranch = this.amplifyApp.addBranch("main");
     } else {
-      const devBranch = this.mstacmAmplifyFrontend.addBranch("dev");
+      const devBranch = this.amplifyApp.addBranch("dev");
     }
+  }
+  public addPolicy(actions: string[], resources: string[]) {
+    this.amplifyServiceRole.addToPolicy(
+      new PolicyStatement({
+        actions: actions,
+        resources: resources,
+      })
+    );
   }
 }
