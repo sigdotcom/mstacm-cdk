@@ -22,8 +22,8 @@ export default class AmplifyConstruct extends Construct {
       }
     );
 
-    const domainName =
-      props.environment === "prod" ? "web.mstacm.org" : "dev.web.mstacm.org";
+    // const domainName =
+    //   props.environment === "prod" ? "web.mstacm.org" : "dev.web.mstacm.org";
 
     const amplifyServiceRole = new Role(this, "AmplifyServiceRole", {
       assumedBy: new ServicePrincipal("amplify.amazonaws.com"),
@@ -46,7 +46,7 @@ export default class AmplifyConstruct extends Construct {
       role: amplifyServiceRole,
     });
 
-    this.mstacmAmplifyFrontend.addDomain(domainName);
+    // this.mstacmAmplifyFrontend.addDomain(domainName);
 
     if (props.environment === "prod") {
       const masterBranch = this.mstacmAmplifyFrontend.addBranch("main");

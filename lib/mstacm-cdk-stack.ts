@@ -1,10 +1,5 @@
 import { Stack, StackProps } from "aws-cdk-lib";
-import {
-  AmplifyConstruct,
-  CognitoConstruct,
-  Route53Construct,
-  CertificateConstruct,
-} from "./constructs";
+import { AmplifyConstruct, CognitoConstruct } from "./constructs";
 import { Construct } from "constructs";
 
 export class MstacmCdkStack extends Stack {
@@ -14,13 +9,13 @@ export class MstacmCdkStack extends Stack {
     const environment: string = this.node.tryGetContext("environment") || "dev";
     const rootDomain = "mstacm.org";
 
-    // const Auth = new CognitoConstruct(this, "MstacmAuth", {
-    //   environment: environment,
-    // });
+    const Auth = new CognitoConstruct(this, "MstacmAuth", {
+      environment: environment,
+    });
 
-    // const AmplifyFrontend = new AmplifyConstruct(this, "MstacmFrontend", {
-    //   environment: environment,
-    //   parameterArns: Auth.authParameterArns,
-    // });
+    const AmplifyFrontend = new AmplifyConstruct(this, "MstacmFrontend", {
+      environment: environment,
+      parameterArns: Auth.authParameterArns,
+    });
   }
 }

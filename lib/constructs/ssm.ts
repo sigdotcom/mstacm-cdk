@@ -5,7 +5,7 @@ import { Construct } from "constructs";
 export interface SsmConstructProps extends StackProps {}
 
 export default class SsmConstruct extends Construct {
-  private readonly ssmParameterArns: string[];
+  private readonly ssmParameterArns: string[] = [];
 
   constructor(scope: Construct, id: string, props: SsmConstructProps) {
     super(scope, id);
