@@ -48,7 +48,7 @@ export default class CognitoConstruct extends Construct {
 
     this.userPoolDomain = this.userPool.addDomain("MstacmCognitoDomain", {
       cognitoDomain: {
-        domainPrefix: "mstacm-auth",
+        domainPrefix: `mstacm-${props.environment}-auth`,
       },
     });
 
