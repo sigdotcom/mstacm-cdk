@@ -1,12 +1,15 @@
 import { StackProps } from "aws-cdk-lib";
 import {
   OAuthScope,
+  StringAttribute,
   UserPool,
   UserPoolClient,
   UserPoolDomain,
+  UserPoolOperation,
 } from "aws-cdk-lib/aws-cognito";
 import { Construct } from "constructs";
 import SsmContruct from "./ssm";
+import { Function as LambdaFunction } from "aws-cdk-lib/aws-lambda";
 
 export interface CognitoConstructProps extends StackProps {
   environment: string;
@@ -46,6 +49,9 @@ export default class CognitoConstruct extends Construct {
         requireUppercase: true,
         requireDigits: true,
         requireSymbols: true,
+      },
+      customAttributes: {
+        role: new StringAttribute({ mutable: true }),
       },
     });
 
@@ -89,6 +95,15 @@ export default class CognitoConstruct extends Construct {
     return this.parameterArns;
   }
 
+  public get getArn(): string {
+    return this.userPool.userPoolArn;
+  }
+  public addPostTrigger(lambdaFunction: LambdaFunction) {
+    this.userPool.addTrigger(
+      UserPoolOperation.POST_CONFIRMATION,
+      lambdaFunction
+    );
+  }
   private constructCallbackUrls(urls: string[]): string[] {
     const callbackUrls: string[] = [];
     urls.forEach((url) => {
