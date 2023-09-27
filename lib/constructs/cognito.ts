@@ -50,38 +50,39 @@ export default class CognitoConstruct extends Construct {
         requireDigits: true,
         requireSymbols: true,
       },
+      standardAttributes: {
+        givenName: {
+          required: true,
+          mutable: true,
+        },
+        familyName: {
+          required: true,
+          mutable: true,
+        },
+        // You can configure other standard attributes similarly
+      },
       customAttributes: {
         role: new StringAttribute({ mutable: true }),
       },
     });
 
-    this.userPoolDomain = this.userPool.addDomain("MstacmCognitoDomain", {
-      cognitoDomain: {
-        domainPrefix: `mstacm-${props.environment}-auth`,
-      },
-    });
+    // this.userPoolDomain = this.userPool.addDomain("MstacmCognitoDomain", {
+    //   cognitoDomain: {
+    //     domainPrefix: `mstacm-${props.environment}-auth`,
+    //   },
+    // });
 
-    this.userPoolClient = this.userPool.addClient("MstacmUserPoolClient", {
-      oAuth: {
-        callbackUrls: this.callbackUrls,
-        logoutUrls: this.logoutUrls,
-        flows: {
-          authorizationCodeGrant: true,
-          implicitCodeGrant: false,
-        },
-        scopes: [OAuthScope.OPENID],
-      },
-    });
+    this.userPoolClient = this.userPool.addClient("MstacmUserPoolClient");
 
     const ssmParameters = [
-      { name: "authDomain", value: this.userPoolDomain.domainName },
+      // { name: "authDomain", value: this.userPoolDomain.domainName },
       { name: "userPoolId", value: this.userPool.userPoolId },
       {
         name: "userPoolWebClientId",
         value: this.userPoolClient.userPoolClientId,
       },
-      { name: "redirectSignIn", value: this.callbackUrls[0] },
-      { name: "redirectSignOut", value: this.logoutUrls[0] },
+      // { name: "redirectSignIn", value: this.callbackUrls[0] },
+      // { name: "redirectSignOut", value: this.logoutUrls[0] },
     ];
 
     ssmParameters.forEach((param) => {
