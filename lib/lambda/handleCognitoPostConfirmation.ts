@@ -3,7 +3,10 @@ import {
   AdminUpdateUserAttributesCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
-const cognitoIdp = new CognitoIdentityProviderClient({ region: "us-east-1" }); // replace 'us-east-1' with your region if different
+import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
+
+const cognitoIdp = new CognitoIdentityProviderClient({ region: "us-east-1" });
+const dynamoDb = new DynamoDBClient({ region: "us-east-1" });
 
 const handler = async (event: any) => {
   const params = {
@@ -21,12 +24,26 @@ const handler = async (event: any) => {
     // Make the call to update user attributes
     const command = new AdminUpdateUserAttributesCommand(params);
     await cognitoIdp.send(command);
+
+    // Insert the new user entry into the "UserTable"
+    const dynamoDbParams = {
+      TableName: "UserTable",
+      Item: {
+        userId: { S: event.userName },
+        firstName: { S: event.request.userAttributes.given_name },
+        lastName: { S: event.request.userAttributes.family_name },
+        role: { S: "member" },
+        gradDate: { S: "" },
+        resume: { S: "" },
+      },
+    };
+    const putCommand = new PutItemCommand(dynamoDbParams);
+    await dynamoDb.send(putCommand);
   } catch (err) {
     console.error("Error updating user attributes:", err);
-    throw err; // You might want to handle this more gracefully depending on your use case.
+    throw err;
   }
 
-  // Return the original event (or modify as necessary)
   return event;
 };
 

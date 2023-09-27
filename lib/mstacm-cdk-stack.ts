@@ -7,6 +7,8 @@ import {
 import { AmplifyConstruct, CognitoConstruct } from "./constructs";
 import { Construct } from "constructs";
 import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
+import DynamoDBConstruct from "./constructs/dynamodb";
+import S3Construct from "./constructs/s3";
 
 export class MstacmCdkStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -16,14 +18,14 @@ export class MstacmCdkStack extends Stack {
     console.log(environment);
     const rootDomain = "mstacm.org";
 
-    const Auth = new CognitoConstruct(this, "MstacmAuth", {
-      environment: environment,
-    });
-    const lambdaRole = new Role(this, "LambdaRole", {
+    // const Auth = new CognitoConstruct(this, "MstacmAuth", {
+    //   environment: environment,
+    // });
+    const cognitoPostConfirmLambdaRole = new Role(this, "LambdaRole", {
       assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
     });
 
-    lambdaRole.addToPolicy(
+    cognitoPostConfirmLambdaRole.addToPolicy(
       new PolicyStatement({
         actions: ["cognito-idp:AdminUpdateUserAttributes"],
         resources: ["*"],
@@ -31,7 +33,7 @@ export class MstacmCdkStack extends Stack {
     );
 
     // New permissions for CloudWatch Logs
-    lambdaRole.addToPolicy(
+    cognitoPostConfirmLambdaRole.addToPolicy(
       new PolicyStatement({
         actions: [
           "logs:CreateLogGroup",
@@ -42,6 +44,13 @@ export class MstacmCdkStack extends Stack {
       })
     );
 
+    cognitoPostConfirmLambdaRole.addToPolicy(
+      new PolicyStatement({
+        actions: ["dynamodb:PutItem", "dynamodb:UpdateItem"],
+        resources: ["*"],
+      })
+    );
+
     const postConfirmationLambda = new LambdaFunction(
       this,
       "CognitoPostConfirmationLambda",
@@ -49,11 +58,11 @@ export class MstacmCdkStack extends Stack {
         runtime: Runtime.NODEJS_18_X,
         handler: "handleCognitoPostConfirmation.handler",
         code: Code.fromAsset("dist/lib/lambda"),
-        role: lambdaRole,
+        role: cognitoPostConfirmLambdaRole,
       }
     );
 
-    Auth.addPostTrigger(postConfirmationLambda);
+    // Auth.addPostTrigger(postConfirmationLambda);
 
     const MstacmWebFrontend = new AmplifyConstruct(this, "MstacmWebFrontend", {
       environment: environment,
@@ -61,6 +70,17 @@ export class MstacmCdkStack extends Stack {
       gitRepo: "mstacm-frontend",
     });
 
-    MstacmWebFrontend.addPolicy(["ssm:GetParameter"], Auth.authParameterArns);
+    // MstacmWebFrontend.addPolicy(["ssm:GetParameter"], Auth.authParameterArns);
+
+    const userTable = new DynamoDBConstruct(this, "UserTableConstruct", {
+      environment: environment,
+      tableName: "UserTable",
+      partitionKey: "userId",
+    });
+
+    const resumeBucket = new S3Construct(this, "ResumeBucketConstruct", {
+      environment: environment,
+      name: `mstacm-${environment}-resume-bucket`,
+    });
   }
 }
