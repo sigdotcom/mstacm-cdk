@@ -18,9 +18,9 @@ export class MstacmCdkStack extends Stack {
     console.log(environment);
     const rootDomain = "mstacm.org";
 
-    // const Auth = new CognitoConstruct(this, "MstacmAuth", {
-    //   environment: environment,
-    // });
+    const Auth = new CognitoConstruct(this, "MstacmAuth", {
+      environment: environment,
+    });
     const cognitoPostConfirmLambdaRole = new Role(this, "LambdaRole", {
       assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
     });
@@ -62,7 +62,7 @@ export class MstacmCdkStack extends Stack {
       }
     );
 
-    // Auth.addPostTrigger(postConfirmationLambda);
+    Auth.addPostTrigger(postConfirmationLambda);
 
     const MstacmWebFrontend = new AmplifyConstruct(this, "MstacmWebFrontend", {
       environment: environment,
@@ -70,7 +70,7 @@ export class MstacmCdkStack extends Stack {
       gitRepo: "mstacm-frontend",
     });
 
-    // MstacmWebFrontend.addPolicy(["ssm:GetParameter"], Auth.authParameterArns);
+    MstacmWebFrontend.addPolicy(["ssm:GetParameter"], Auth.authParameterArns);
 
     const userTable = new DynamoDBConstruct(this, "UserTableConstruct", {
       environment: environment,
