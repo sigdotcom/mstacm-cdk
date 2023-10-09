@@ -9,8 +9,9 @@ import { Construct } from "constructs";
 import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import DynamoDBConstruct from "./constructs/dynamodb";
 import S3Construct from "./constructs/s3";
-
+import { UserPool } from "aws-cdk-lib/aws-cognito";
 export class MstacmCdkStack extends Stack {
+  private readonly Auth: CognitoConstruct;
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
@@ -18,7 +19,7 @@ export class MstacmCdkStack extends Stack {
     console.log(environment);
     const rootDomain = "mstacm.org";
 
-    const Auth = new CognitoConstruct(this, "MstacmAuth", {
+    this.Auth = new CognitoConstruct(this, "MstacmAuth", {
       environment: environment,
     });
     const cognitoPostConfirmLambdaRole = new Role(this, "LambdaRole", {
@@ -57,12 +58,12 @@ export class MstacmCdkStack extends Stack {
       {
         runtime: Runtime.NODEJS_18_X,
         handler: "handleCognitoPostConfirmation.handler",
-        code: Code.fromAsset("dist/lib/lambda"),
+        code: Code.fromAsset("dist/lib/cdk-lambdas"),
         role: cognitoPostConfirmLambdaRole,
       }
     );
 
-    Auth.addPostTrigger(postConfirmationLambda);
+    this.Auth.addPostTrigger(postConfirmationLambda);
 
     const MstacmWebFrontend = new AmplifyConstruct(this, "MstacmWebFrontend", {
       environment: environment,
@@ -70,7 +71,10 @@ export class MstacmCdkStack extends Stack {
       gitRepo: "mstacm-frontend",
     });
 
-    MstacmWebFrontend.addPolicy(["ssm:GetParameter"], Auth.authParameterArns);
+    MstacmWebFrontend.addPolicy(
+      ["ssm:GetParameter"],
+      this.Auth.authParameterArns
+    );
 
     const userTable = new DynamoDBConstruct(this, "UserTableConstruct", {
       environment: environment,
@@ -82,5 +86,8 @@ export class MstacmCdkStack extends Stack {
       environment: environment,
       name: `mstacm-${environment}-resume-bucket`,
     });
+  }
+  public get authPool(): UserPool {
+    return this.Auth.getUserPool;
   }
 }
