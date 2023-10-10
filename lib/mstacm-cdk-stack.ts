@@ -71,10 +71,7 @@ export class MstacmCdkStack extends Stack {
       gitRepo: "mstacm-frontend",
     });
 
-    MstacmWebFrontend.addPolicy(
-      ["ssm:GetParameter"],
-      this.Auth.authParameterArns
-    );
+    MstacmWebFrontend.addPolicy(["ssm:GetParameter"], ["*"]);
 
     const userTable = new DynamoDBConstruct(this, "UserTableConstruct", {
       environment: environment,
