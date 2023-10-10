@@ -6,4 +6,5 @@ export enum HttpMethods {
 }
 export enum Permission {
   DYNAMODB = "dynamodb",
+  COGNITO = "cognito",
 }

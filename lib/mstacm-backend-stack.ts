@@ -2,7 +2,6 @@ import { Stack, StackProps } from "aws-cdk-lib";
 import {
   CognitoUserPoolsAuthorizer,
   LambdaIntegration,
-  Method,
   RestApi,
 } from "aws-cdk-lib/aws-apigateway";
 import { UserPool } from "aws-cdk-lib/aws-cognito";
@@ -35,7 +34,15 @@ export class MstacmBackendStack extends Stack {
         name: "listUsers",
         entry: "dist/lib/backend-lambdas/listUsers.js",
         method: HttpMethods.GET,
+        path: "users/list",
         permissions: [Permission.DYNAMODB],
+      },
+      {
+        name: "updatePermission",
+        entry: "dist/lib/backend-lambdas/updatePermission.js",
+        method: HttpMethods.POST,
+        path: "users/permissions",
+        permissions: [Permission.DYNAMODB, Permission.COGNITO],
       },
     ];
 
@@ -74,14 +81,26 @@ export class MstacmBackendStack extends Stack {
     });
 
     endpoints.forEach((endpoint) => {
+      const pathParts = endpoint.path.split("/");
+
+      let currentResource = api.root;
+      for (const part of pathParts) {
+        // Check if resource already exists. If not, create a new one.
+        const existingResource = currentResource.getResource(part);
+        if (!existingResource) {
+          currentResource = currentResource.addResource(part);
+        } else {
+          currentResource = existingResource;
+        }
+      }
+
       const lambdaEndpoint: LambdaEndpointConstruct =
         new LambdaEndpointConstruct(this, endpoint.name, endpoint);
-
-      const resource = api.root.addResource(endpoint.name);
       const myFunctionIntegration = new LambdaIntegration(
         lambdaEndpoint.function
       );
-      resource.addMethod(endpoint.method, myFunctionIntegration, {
+
+      currentResource.addMethod(endpoint.method, myFunctionIntegration, {
         authorizer: authorizer,
       });
     });

@@ -14,9 +14,9 @@ export interface LambdaEndpointConstructProps extends StackProps {
   name: string;
   entry: string;
   method: HttpMethods;
+  path: string;
   permissions: Permission[];
 }
-
 export default class LambdaEndpointConstruct extends Construct {
   private readonly lambdaFunction: NodejsFunction;
   constructor(
@@ -30,6 +30,18 @@ export default class LambdaEndpointConstruct extends Construct {
       assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
       description: `Endpoint role for ${props.name}`,
     });
+
+    // New permissions for CloudWatch Logs
+    lambdaRole.addToPolicy(
+      new PolicyStatement({
+        actions: [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+        ],
+        resources: ["arn:aws:logs:*:*:*"],
+      })
+    );
 
     props.permissions.forEach((permission) => {
       if ((permission = Permission.DYNAMODB)) {
@@ -45,6 +57,14 @@ export default class LambdaEndpointConstruct extends Construct {
           resources: ["*"],
         });
         lambdaRole.addToPolicy(dynamoDBPolicyStatement);
+      }
+      if ((permission = Permission.COGNITO)) {
+        const cognitoPolicyStatement = new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: ["cognito-idp:AdminUpdateUserAttributes"],
+          resources: ["*"],
+        });
+        lambdaRole.addToPolicy(cognitoPolicyStatement);
       }
     });
 
