@@ -2,10 +2,20 @@
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { MstacmCdkStack } from "../lib/mstacm-cdk-stack";
-// import { MstacmStorageStack } from "../lib/mstacm-storage-stack";
+import { MstacmBackendStack } from "../lib/mstacm-backend-stack";
 
 const app = new cdk.App();
 
-// new MstacmStorageStack(app, "MstacmStorageStack", {});
-
-new MstacmCdkStack(app, "MstacmCdkStack", {});
+const infraStack: MstacmCdkStack = new MstacmCdkStack(
+  app,
+  "MstacmCdkStack",
+  {}
+);
+const userPool = infraStack.authPool;
+const backendStack: MstacmBackendStack = new MstacmBackendStack(
+  app,
+  "MstacmBackendStack",
+  {
+    userPool: userPool,
+  }
+);

@@ -40,7 +40,7 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
 
       - name: Deploy CDK App
-        run: npx cdk deploy --require-approval never -c environment=prod
+        run: npx cdk deploy --all --require-approval never -c environment=prod
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
