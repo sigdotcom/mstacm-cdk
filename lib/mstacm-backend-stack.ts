@@ -49,7 +49,11 @@ export class MstacmBackendStack extends Stack {
         entry: "dist/lib/backend-lambdas/updatePermission.js",
         method: HttpMethods.POST,
         path: "users/permissions",
-        permissions: [Permission.DYNAMODB, Permission.COGNITO],
+        permissions: [
+          Permission.DYNAMODB,
+          Permission.COGNITO,
+          Permission.IDENTITYSTORE,
+        ],
       },
       {
         name: "requestAccount",

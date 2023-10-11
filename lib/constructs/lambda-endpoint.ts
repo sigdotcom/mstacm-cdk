@@ -70,21 +70,7 @@ export default class LambdaEndpointConstruct extends Construct {
       if (permission === Permission.IDENTITYSTORE) {
         const identityStorePolicyStatement = new PolicyStatement({
           effect: Effect.ALLOW,
-          actions: [
-            "identitystore:IsMemberInGroups",
-            "identitystore:DescribeUser",
-            "identitystore:GetGroupMembershipId",
-            "identitystore:ListUsers",
-            "identitystore:UpdateUser",
-            "identitystore:GetGroupId",
-            "identitystore:DeleteUser",
-            "identitystore:DescribeGroupMembership",
-            "identitystore:DeleteGroupMembership",
-            "identitystore:CreateGroupMembership",
-            "identitystore:DescribeGroup",
-            "identitystore:CreateUser",
-            "identitystore:GetUserId",
-          ],
+          actions: ["*"],
           resources: ["*"],
         });
         lambdaRole.addToPolicy(identityStorePolicyStatement);

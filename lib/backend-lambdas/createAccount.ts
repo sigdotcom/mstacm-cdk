@@ -24,12 +24,10 @@ export const createAccountHandler = async (
     }
     const create = await identityService.createUser(firstName, lastName, email);
     if (create.UserId) {
-      const update = await dynamoService.updateAccountStatus(
-        userId,
-        create.UserId
-      );
+      await identityService.assignGroup(create.UserId, role);
+      await dynamoService.updateAccountStatus(userId, create.UserId);
     } else {
-      const update = await dynamoService.updateAccountStatus(userId, "false");
+      await dynamoService.updateAccountStatus(userId, "false");
     }
 
     return {
