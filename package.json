@@ -28,6 +28,7 @@
     "@aws-cdk/aws-amplify-alpha": "^2.95.1-alpha.0",
     "@aws-sdk/client-cognito-identity-provider": "^3.414.0",
     "@aws-sdk/client-dynamodb": "^3.417.0",
+    "@aws-sdk/client-identitystore": "^3.427.0",
     "aws-cdk-lib": "^2.95.1",
     "aws-lambda": "^1.0.7",
     "constructs": "^10.2.70",

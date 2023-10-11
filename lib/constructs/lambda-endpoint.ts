@@ -43,8 +43,8 @@ export default class LambdaEndpointConstruct extends Construct {
       })
     );
 
-    props.permissions.forEach((permission) => {
-      if ((permission = Permission.DYNAMODB)) {
+    props.permissions.forEach((permission: Permission) => {
+      if (permission === Permission.DYNAMODB) {
         const dynamoDBPolicyStatement = new PolicyStatement({
           effect: Effect.ALLOW,
           actions: [
@@ -58,13 +58,36 @@ export default class LambdaEndpointConstruct extends Construct {
         });
         lambdaRole.addToPolicy(dynamoDBPolicyStatement);
       }
-      if ((permission = Permission.COGNITO)) {
+      if (permission === Permission.COGNITO) {
         const cognitoPolicyStatement = new PolicyStatement({
           effect: Effect.ALLOW,
           actions: ["cognito-idp:AdminUpdateUserAttributes"],
           resources: ["*"],
         });
         lambdaRole.addToPolicy(cognitoPolicyStatement);
+      }
+
+      if (permission === Permission.IDENTITYSTORE) {
+        const identityStorePolicyStatement = new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: [
+            "identitystore:IsMemberInGroups",
+            "identitystore:DescribeUser",
+            "identitystore:GetGroupMembershipId",
+            "identitystore:ListUsers",
+            "identitystore:UpdateUser",
+            "identitystore:GetGroupId",
+            "identitystore:DeleteUser",
+            "identitystore:DescribeGroupMembership",
+            "identitystore:DeleteGroupMembership",
+            "identitystore:CreateGroupMembership",
+            "identitystore:DescribeGroup",
+            "identitystore:CreateUser",
+            "identitystore:GetUserId",
+          ],
+          resources: ["*"],
+        });
+        lambdaRole.addToPolicy(identityStorePolicyStatement);
       }
     });
 

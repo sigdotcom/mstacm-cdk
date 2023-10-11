@@ -33,6 +33,8 @@ const handler = async (event: any) => {
         firstName: { S: event.request.userAttributes.given_name },
         lastName: { S: event.request.userAttributes.family_name },
         role: { S: "member" },
+        email: { S: event.request.userAttributes.email },
+        awsAccountStatus: { S: "false" },
         gradDate: { S: "" },
         resume: { S: "" },
       },

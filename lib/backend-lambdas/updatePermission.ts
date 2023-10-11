@@ -33,6 +33,8 @@ export const updatePermissionHandler = async (
       UserPoolId: userPoolId,
     };
 
+    //TODO: add extra change to SSO permissions if awsAccountStatus is true
+
     const command = new AdminUpdateUserAttributesCommand(cognitoParams);
     await cognitoIdp.send(command);
 
