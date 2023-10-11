@@ -38,11 +38,43 @@ export class MstacmBackendStack extends Stack {
         permissions: [Permission.DYNAMODB],
       },
       {
+        name: "getUser",
+        entry: "dist/lib/backend-lambdas/getUser.js",
+        method: HttpMethods.GET,
+        path: "users/get",
+        permissions: [Permission.DYNAMODB],
+      },
+      {
         name: "updatePermission",
         entry: "dist/lib/backend-lambdas/updatePermission.js",
         method: HttpMethods.POST,
         path: "users/permissions",
-        permissions: [Permission.DYNAMODB, Permission.COGNITO],
+        permissions: [
+          Permission.DYNAMODB,
+          Permission.COGNITO,
+          Permission.IDENTITYSTORE,
+        ],
+      },
+      {
+        name: "requestAccount",
+        entry: "dist/lib/backend-lambdas/requestAccount.js",
+        method: HttpMethods.POST,
+        path: "users/account/request",
+        permissions: [Permission.DYNAMODB],
+      },
+      {
+        name: "createAccount",
+        entry: "dist/lib/backend-lambdas/createAccount.js",
+        method: HttpMethods.POST,
+        path: "users/account/create",
+        permissions: [Permission.DYNAMODB, Permission.IDENTITYSTORE],
+      },
+      {
+        name: "deleteAccount",
+        entry: "dist/lib/backend-lambdas/deleteAccount.js",
+        method: HttpMethods.POST,
+        path: "users/account/delete",
+        permissions: [Permission.DYNAMODB, Permission.IDENTITYSTORE],
       },
     ];
 

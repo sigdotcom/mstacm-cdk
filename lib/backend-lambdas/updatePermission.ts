@@ -1,5 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import DynamoDBService from "./services/DynamoDb";
+import IdentityStoreService from "./services/IdentityStore";
 import { generateErrorResponse, headers } from "./common/types";
 import {
   AdminUpdateUserAttributesCommand,
@@ -13,11 +14,14 @@ export const updatePermissionHandler = async (
 ): Promise<APIGatewayProxyResult> => {
   try {
     const dynamoService = new DynamoDBService("UserTable");
+    const identityService = new IdentityStoreService();
     const body = JSON.parse(event.body || "{}");
 
     const userId = body.userId;
     const role = body.userRole;
     const userPoolId = body.userPoolId;
+    const identityId = body.identityId;
+
     if (!userId || !role) {
       throw new Error("userId and role are required");
     }
@@ -32,6 +36,12 @@ export const updatePermissionHandler = async (
       Username: userId,
       UserPoolId: userPoolId,
     };
+
+    //assign SSO permissions to user
+
+    if (identityId !== "false" || identityId !== "pending") {
+      await identityService.assignGroup(identityId, role);
+    }
 
     const command = new AdminUpdateUserAttributesCommand(cognitoParams);
     await cognitoIdp.send(command);
