@@ -116,7 +116,7 @@ class IdentityStoreService {
       throw new Error("New group not found");
     }
 
-    const currentGroupId = await this.getCurrentGroup(userId); // Get the current group of the user
+    const currentGroupId = await this.getCurrentGroup(userId);
 
     // If the user is already in the target group, no action is necessary
     if (currentGroupId === newGroupId) {

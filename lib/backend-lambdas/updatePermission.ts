@@ -39,7 +39,7 @@ export const updatePermissionHandler = async (
 
     //assign SSO permissions to user
 
-    if (identityId !== "false" || identityId !== "pending") {
+    if (identityId !== "false" && identityId !== "pending") {
       await identityService.assignGroup(identityId, role);
     }
 
